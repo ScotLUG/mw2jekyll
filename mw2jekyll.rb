@@ -6,7 +6,7 @@
 # Author::    David Jones (mailto: david@djones.eu)
 # Copyright:: Copyright (C) 2014 David Jones
 # License::   GNU GPLv3+
-# Version::   0.0.0.alpha
+# Version::   0.0.0.alpha1
 
 # This script is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -139,7 +139,7 @@ query = <<SQL.strip.gsub(/\s+/, ' ')
                                 as `unix_time`,
 
     `page`.`page_title`         as `title`,
-    `text`.`old_text`           as `blob`,
+    `text`.`old_text`           as `content`,
     `revision`.`rev_comment`    as `message`,
 
     `revision`.`rev_minor_edit` as `minor?`
@@ -154,7 +154,6 @@ SQL
 result = client.query query, symbolize_keys: true, cast_booleans: true
 abort 'Error: no results returned!' unless result.any?
 
-index = Rugged::Index.new
 # Convenience monkey patches.
 class Object
   # Test for nil or empty.
@@ -180,19 +179,45 @@ end
 
 print 'Populating repository'
 result.each do |row|
-  blob = <<-YAML
+  title = row[:title].unsnake
+  path  = row[:title].sluggify << '.markdown'
+
+  # Turn wikilinks like "[[foo]]", "[[foo|bar]]" into markdown links.
+  # FIXME: this may result in broken links; look for redlinks in the DB
+  markup = row[:content].gsub /\[\[([^|]+)(.*)\]\]/ do
+    "[#{ $2 ? $2.deguff : $1.unsnake }](#{ $1.catstrip.sluggify }.html)"
+  end
+
+  # Don't interpret wikimarkup by spacing out brackets.
+  markup.gsub! '\[(?=\[)', '[ '
+  markup.gsub! '\](?=\])', '] '
+
+  # Remove more wikiguff.
+  markup.gsub! /__[A-Z]+__/, ''
+
+  # Handle indentation.
+  markup.gsub! /^:\s*/, ' ' * 4
+
+  # Use pandoc for the rest of the markdown conversion.
+  markup = PandocRuby.convert markup, from: :mediawiki, to: :markdown
+
+  unless markup.blank?
+    markup.prepend <<-YAML
 ---
-title: #{row[:title]}
+title: #{ title }
 ---
-  YAML
-  blob << PandocRuby.convert(row[:blob], from: :mediawiki, to: :markdown)
+    YAML
+  end
+  repo.index.add(path: path,
+                 oid:  repo.write(markup, :blob),
+                 mode: 0100644)
 
-  oid = repo.write blob, :blob
-
-  # Make sure path is legal.
-  path = row[:title].tr('/', '-') << '.markdown'
-
-  index.add path: path, oid: oid, mode: 0100644
+  # Try to construct a reasonable commit message.
+  message = if row[:message].blank?
+              row[:minor?] ? 'Minor edit' : "Modified #{path}"
+            else
+              row[:message]
+            end
 
   author = {
     email: row[:author_email],
@@ -201,7 +226,7 @@ title: #{row[:title]}
   }
 
   options = {
-    tree:       index.write_tree(repo),
+    tree:       repo.index.write_tree(repo),
     author:     author,
     message:    row[:message],
     committer:  author,
@@ -209,7 +234,9 @@ title: #{row[:title]}
     update_ref: 'HEAD'
   }
 
-  commit = Rugged::Commit.create(repo, options)
+  Rugged::Commit.create(repo, options)
+
+  # Print a progress marker.
   print '.'
 end
 
