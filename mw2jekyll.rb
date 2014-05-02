@@ -33,7 +33,7 @@
 ## Code:
 
 # Require our external gems or prompt the user to install them.
-missing = %w(rugged mysql2 trollop pandoc-ruby).select do |gem|
+missing = %w( rugged mysql2 trollop pandoc-ruby ).select do |gem|
   begin
     require gem
     false
@@ -43,8 +43,8 @@ missing = %w(rugged mysql2 trollop pandoc-ruby).select do |gem|
 end
 unless missing.empty?
   abort <<-MSG
-#{$PROGRAM_NAME} requires gem#{'s' unless missing.one?} #{missing.join ', '}.
-Install #{missing.one? ? 'it' : 'them'} with `gem install #{missing.join ' '}`\
+#{ $PROGRAM_NAME } requires gem#{ 's' unless missing.one? } #{ missing.join ', ' }.
+Install #{ missing.one? ? 'it' : 'them' } with `gem install #{ missing.join ' ' }`\
  and run this script again.
   MSG
 end
@@ -63,7 +63,7 @@ end
 opts = Trollop.options do
   banner "A MediaWiki MySQL database to Jekyll Git repository conversion tool.
 
-Usage: #{$PROGRAM_NAME} [option]… <database> <repository>
+Usage: #{ $PROGRAM_NAME } [option]… <database> <repository>
 
 Database options:"
   opt :db_user, 'MySQL user', default: 'root', short: 'u'
@@ -86,13 +86,13 @@ Trollop.die 'target repository required' if ARGV.empty?
 opts[:repo_path] = File.expand_path ARGV.shift
 
 # Check there wasn't anything else on ARGV.
-Trollop.die "too many options to ‘#{cmd}’" unless ARGV.empty?
+Trollop.die "too many options to ‘#{ cmd }’" unless ARGV.empty?
 
 # Read in the database password if omitted (and we're on a tty.)
 if opts[:db_password].nil? && STDIN.tty?
   require 'io/console'
 
-  print "Password for MySQL user #{opts[:db_user]}'@#{opts[:db_host]}': "
+  print "Password for MySQL user '#{ opts[:db_user] }'@'#{ opts[:db_host] }': "
   begin
     opts[:db_password] = STDIN.noecho(&:gets).chomp
   rescue NoMethodError
@@ -109,7 +109,7 @@ begin
                               password: opts[:db_password],
                               database: opts[:db_name])
 rescue Mysql2::Error => e
-  abort "Error: #{e.message}"
+  abort "Error: #{ e.message }"
 end
 puts 'Connected to database.'
 
@@ -118,15 +118,15 @@ unless File.directory? opts[:repo_path]
   require 'fileutils'
 
   FileUtils.mkdir_p opts[:repo_path]
-  puts "Created directory at #{opts[:repo_path].inspect}."
+  puts "Created directory at #{ opts[:repo_path].inspect }."
 end
 
 repo = Rugged::Repository.init_at opts[:repo_path], :bare
-puts "Initialized repository at #{repo.path.inspect}."
+puts "Initialized repository at #{ repo.path.inspect }."
 
 # Make sure we're not overwriting an existing repository.
 unless repo.empty? || opts[:repo_force]
-  abort "Error: #{repo.path.inspect} is not an empty repository."
+  abort "Error: #{ repo.path.inspect } is not an empty repository."
 end
 
 # Get the neccessany information from the database.
@@ -153,7 +153,7 @@ query = <<SQL.strip.gsub(/\s+/, ' ')
 SQL
 
 # Commit each row of the query to the repo.
-result = client.query(query, symbolize_keys: true, cast_booleans: true)
+result = client.query query, symbolize_keys: true, cast_booleans: true
 abort 'Error: no results returned!' unless result.any?
 
 print 'Populating repository'
