@@ -142,14 +142,12 @@ query = <<SQL.strip.gsub(/\s+/, ' ')
     `text`.`old_text`           as `blob`,
     `revision`.`rev_comment`    as `message`,
 
-    `revision`.`rev_minor_edit` as `minor?`,
-    !`revision`.`rev_parent_id` as `create?`,
-    `revision`.`rev_deleted`    as `destroy?`
+    `revision`.`rev_minor_edit` as `minor?`
   from `text`
     inner join `revision` on `revision`.`rev_text_id` = `text`.`old_id`
     inner join `page`     on `page`.`page_id` = `revision`.`rev_page`
     inner join `user`     on `user`.`user_id` = `revision`.`rev_user`
-  order by `revision`.`rev_id`
+  order by `unix_time`
 SQL
 
 # Commit each row of the query to the repo.
