@@ -156,9 +156,31 @@ SQL
 result = client.query query, symbolize_keys: true, cast_booleans: true
 abort 'Error: no results returned!' unless result.any?
 
-print 'Populating repository'
 index = Rugged::Index.new
+# Convenience monkey patches.
+class Object
+  # Test for nil or empty.
+  def blank?() nil? || empty? end
+end
 
+class String
+  # Change "A String/Title, like this!" to "a-string-title-like-this".
+  def sluggify() downcase.tr_s('^a-z0-9', '-').chomp('-') end
+
+  # Change "A_title__like_this" to "A title like this".
+  def unsnake() tr_s('_', ' ').strip end
+
+  # Change "|some|wiki|guff|A title" to "A title".
+  def deguff() rpartition('|').pop end
+
+  # Change "Category:page" to "page"
+  def catstrip() rpartition(':').pop end
+
+  # Test for all-blank string.
+  def blank?() strip.empty? end
+end
+
+print 'Populating repository'
 result.each do |row|
   blob = <<-YAML
 ---
