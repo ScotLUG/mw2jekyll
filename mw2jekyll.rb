@@ -6,7 +6,7 @@
 # Author::    David Jones (mailto: david@djones.eu)
 # Copyright:: Copyright (C) 2014 David Jones
 # License::   GNU GPLv3+
-# Version::   0.0.0.alpha1
+# Version::   0.0.0.beta
 
 # This script is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
