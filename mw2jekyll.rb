@@ -43,7 +43,7 @@ missing = %w( rugged mysql2 trollop pandoc-ruby ).select do |gem|
 end
 unless missing.empty?
   abort <<-MSG
-#{ $PROGRAM_NAME } requires gem#{ 's' unless missing.one? } #{ missing.join ', ' }.
+#{ $PROGRAM_NAME } requires #{ missing.join ', ' }.
 Install #{ missing.one? ? 'it' : 'them' } with `gem install #{ missing.join ' ' }`\
  and run this script again.
   MSG
