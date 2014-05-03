@@ -4,9 +4,9 @@ A MediaWiki MySQL database to Jekyll Git repository conversion tool.
 
 ## Usage notes
 
-This script initializes a bare repository.  To initialize into a normal repository, use /path/to/repo/.git
+This script initializes a bare repository.  To initialize into a normal repository, use `/path/to/repo/.git`.  Try `mw2jekyll.rb --help` for options.
 
-The script will prompt you to install any missing required gems, however you must install [pandoc](http://johnmacfarlane.net/pandoc/) manually.
+The script will prompt you to install any missing required gems.
 
 ## Copying
 
