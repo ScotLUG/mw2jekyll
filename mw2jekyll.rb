@@ -32,6 +32,8 @@
 
 ## Code:
 
+require 'fileutils'
+
 # Require our external gems or prompt the user to install them.
 missing = %w( rugged mysql2 trollop pandoc-ruby ).select do |gem|
   begin
@@ -113,21 +115,21 @@ rescue Mysql2::Error => e
 end
 puts 'Connected to database.'
 
-# Initialize the repository.  Lots of error checking omitted here!
-unless File.directory? opts[:repo_path]
-  require 'fileutils'
+# Check for existance of destination repo.
+if File.directory? opts[:repo_path]
+  # Abort if we're not using force and destination exists.
+  unless opts[:repo_force]
+    abort "Error: destination #{ opts[:repo_path].inspect } exists."
+  end
 
-  FileUtils.mkdir_p opts[:repo_path]
-  puts "Created directory at #{ opts[:repo_path].inspect }."
+  FileUtils.rm_rf opts[:repo_path]
 end
+
+FileUtils.mkdir_p opts[:repo_path]
+puts "Created directory at #{ opts[:repo_path].inspect }."
 
 repo = Rugged::Repository.init_at opts[:repo_path], :bare
 puts "Initialized repository at #{ repo.path.inspect }."
-
-# Make sure we're not overwriting an existing repository.
-unless repo.empty? || opts[:repo_force]
-  abort "Error: #{ repo.path.inspect } is not an empty repository."
-end
 
 # Get the neccessany information from the database.
 query = <<SQL.strip.gsub(/\s+/, ' ')
