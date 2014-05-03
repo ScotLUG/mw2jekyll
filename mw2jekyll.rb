@@ -26,16 +26,14 @@
 # This script initializes a bare repository.  To initialize into a
 # normal repository, use /path/to/repo/.git
 
-# The script will prompt you to install any missing required gems,
-# however you must install pandoc <http://johnmacfarlane.net/pandoc/>
-# manually.
+# The script will prompt you to install any missing required gems.
 
 ## Code:
 
 require 'fileutils'
 
 # Require our external gems or prompt the user to install them.
-missing = %w( rugged mysql2 trollop pandoc-ruby ).select do |gem|
+missing = %w( rugged mysql2 trollop wikicloth ).select do |gem|
   begin
     require gem
     false
@@ -169,50 +167,75 @@ class String
   # Change "A_title__like_this" to "A title like this".
   def unsnake() tr_s('_', ' ').strip end
 
-  # Change "|some|wiki|guff|A title" to "A title".
-  def deguff() rpartition('|').pop end
-
   # Change "Category:page" to "page"
   def catstrip() rpartition(':').pop end
 
   # Test for all-blank string.
   def blank?() strip.empty? end
+
+  # Change <a href="Some Link"></a> to <a href="some-link.html"></a>.
+  def fixlinks
+    gsub /(?<=href=")[^"]+(?=")/ do |uri|
+      uri =~ %r{\A(?:(https?:)?//)|#} ? uri : uri.catstrip.sluggify << '.html'
+    end
+  end
 end
+
+
+# Make sure that we are expecting UTF-8.
+Encoding.default_external = Encoding.default_internal = 'utf-8'
+
+# Add Jekyll files to the first commit.
+blob = <<EOS
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>{{ page.title }}</title>
+<body>
+{{ content }}
+</body>
+EOS
+repo.index.add(path: '_layouts/default.html',
+               oid:  repo.write(blob, :blob),
+               mode: 0100644)
 
 print 'Populating repository'
 result.each do |row|
   title = row[:title].unsnake
-  path  = row[:title].sluggify << '.markdown'
+  path  = row[:title].sluggify << '.html'
 
-  # Turn wikilinks like "[[foo]]", "[[foo|bar]]" into markdown links.
-  # FIXME: this may result in broken links; look for redlinks in the DB
-  markup = row[:content].gsub /\[\[([^|]+)(.*)\]\]/ do
-    "[#{ $2 ? $2.deguff : $1.unsnake }](#{ $1.catstrip.sluggify }.html)"
-  end
-
-  # Don't interpret wikimarkup by spacing out brackets.
-  markup.gsub! '\[(?=\[)', '[ '
-  markup.gsub! '\](?=\])', '] '
-
-  # Remove more wikiguff.
-  markup.gsub! /__[A-Z]+__/, ''
-
-  # Handle indentation.
-  markup.gsub! /^:\s*/, ' ' * 4
-
-  # Use pandoc for the rest of the markdown conversion.
-  markup = PandocRuby.convert markup, from: :mediawiki, to: :markdown
-
-  unless markup.blank?
-    markup.prepend <<-YAML
+  if row[:content].blank?
+    # Delete an empty page.
+    begin
+      repo.index.remove path
+    rescue Rugged::IndexError
+      # That page wasn't in the index, oh well.  Carry on!
+      print '?'
+      next
+    end
+  else
+    # Use String#force_encoding to make sure our text isn't something weird.
+    html = WikiCloth::Parser.new(data: row[:content].force_encoding('utf-8'))
+           .to_html
+           .fixlinks
+           .squeeze("\n")
+    blob = <<-EOS
 ---
+layout: default
 title: #{ title }
 ---
-    YAML
+
+#{ html }
+
+<!-- MediaWiki markup -->
+<!--
+#{ row[:content] }
+-->
+    EOS
+    repo.index.add(path: path,
+                   oid:  repo.write(blob, :blob),
+                   mode: 0100644)
   end
-  repo.index.add(path: path,
-                 oid:  repo.write(markup, :blob),
-                 mode: 0100644)
+
 
   # Try to construct a reasonable commit message.
   message = if row[:message].blank?
