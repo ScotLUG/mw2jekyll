@@ -181,10 +181,6 @@ class String
   end
 end
 
-
-# Make sure that we are expecting UTF-8.
-Encoding.default_external = Encoding.default_internal = 'utf-8'
-
 # Add Jekyll files to the first commit.
 blob = <<EOS
 <!DOCTYPE html>
