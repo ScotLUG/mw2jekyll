@@ -86,7 +86,7 @@ Trollop.die 'target repository required' if ARGV.empty?
 opts[:repo_path] = File.expand_path ARGV.shift
 
 # Check there wasn't anything else on ARGV.
-Trollop.die "too many options to ‘#{ cmd }’" unless ARGV.empty?
+Trollop.die "too many arguments specified" unless ARGV.empty?
 
 # Read in the database password if omitted (and we're on a tty.)
 if opts[:db_password].nil? && STDIN.tty?
