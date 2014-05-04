@@ -181,7 +181,7 @@ class String
   end
 end
 
-# Add Jekyll files to the first commit.
+# Add a template to the first commit.
 blob = <<EOS
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -193,6 +193,11 @@ EOS
 repo.index.add(path: '_layouts/default.html',
                oid:  repo.write(blob, :blob),
                mode: 0100644)
+
+# Add a symlink from site root to the main page (added next.)
+repo.index.add(path: 'index.html',
+               oid:  repo.write('mainpage.html', :blob),
+               mode: 0120000)
 
 print 'Populating repository'
 result.each do |row|
