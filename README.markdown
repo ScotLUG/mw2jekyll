@@ -4,9 +4,9 @@ A MediaWiki MySQL database to Jekyll Git repository conversion tool.
 
 ## Usage notes
 
-This script initializes a bare repository.  To initialize into a normal repository, use `/path/to/repo/.git`.  Try `mw2jekyll.rb --help` for options.
+This script initializes a bare repository.  Try `mw2jekyll.rb --help` to see available options.
 
-The script will prompt you to install any missing required gems.
+The script will prompt you to install any required gems.
 
 ## Copying
 
