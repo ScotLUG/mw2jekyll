@@ -68,7 +68,7 @@ Usage: #{ $PROGRAM_NAME } [option]… <database> <repository>
 Database options:"
   opt :db_user, 'MySQL user', default: 'root', short: 'u'
   opt :db_host, 'MySQL host', default: 'localhost', short: 'H'
-  opt :db_password, 'Database password', type: :string, short: 'p'
+  opt :db_password, 'Database password (default: ask)', type: :string, short: 'p'
   banner '
 Repository options:'
   opt :repo_force, 'Overwrite an existing repository', short: 'f'
