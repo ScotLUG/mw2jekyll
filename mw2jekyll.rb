@@ -239,7 +239,7 @@ title: #{title}
 ---
   YAML
 
-<!-- MediaWiki markup -->
+<!-- MediaWiki source -->
 <!--
 #{markup}
 -->
