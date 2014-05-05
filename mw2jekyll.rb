@@ -20,12 +20,17 @@ You should have received a copy of the GNU General Public License
 along with this script.  If not, see <http://www.gnu.org/licenses/>.
 END
 
-## Commentary:
 
-# This script initializes a bare repository.  To initialize into a
-# normal repository, use /path/to/repo/.git
 
-# The script will prompt you to install any missing required gems.
+COMMENTARY = <<END
+This script will extract the textual revision history in MediaWiki
+markup from a MediaWiki MySQL database, and use it to build a Jekyll
+git repository, converting the markup to HTML as it goes.
+
+You must have the `mysqld` daemon running for this to work.  This
+script requires a few Ruby gems; you will be asked to install any that
+are not found on your system.
+END
 
 ## Code:
 
