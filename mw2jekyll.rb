@@ -151,25 +151,25 @@ repo = Rugged::Repository.init_at opts[:repo_path], :bare
 puts "Initialized repository at #{ repo.path.inspect }."
 
 # Get the neccessany information from the database.
-query = <<SQL.strip.gsub(/\s+/, ' ')
-  select
-    `user`.`user_email`         as `author_email`,
-    `user`.`user_real_name`     as `author_name`,
+query = <<SQL
+select
+  `user`.`user_email`         as `author_email`,
+  `user`.`user_real_name`     as `author_name`,
 
-    unix_timestamp(`revision`.`rev_timestamp`)
-                                as `unix_time`,
+  unix_timestamp(`revision`.`rev_timestamp`)
+                              as `unix_time`,
 
-    `page`.`page_title`         as `title`,
-    `text`.`old_text`           as `content`,
-    `revision`.`rev_comment`    as `message`,
+  `page`.`page_title`         as `title`,
+  `text`.`old_text`           as `content`,
+  `revision`.`rev_comment`    as `message`,
 
-    `revision`.`rev_minor_edit` as `minor?`
-  from `text`
-    inner join `revision` on `revision`.`rev_text_id` = `text`.`old_id`
-    inner join `page`     on `page`.`page_id` = `revision`.`rev_page`
-    inner join `user`     on `user`.`user_id` = `revision`.`rev_user`
-  order by `unix_time`
-  #{ "limit #{opts[:db_limit]}" if opts[:db_limit] }
+  `revision`.`rev_minor_edit` as `minor?`
+from `text`
+  inner join `revision` on `revision`.`rev_text_id` = `text`.`old_id`
+  inner join `page`     on `page`.`page_id` = `revision`.`rev_page`
+  inner join `user`     on `user`.`user_id` = `revision`.`rev_user`
+order by `unix_time`
+#{ "limit #{opts[:db_limit]}" if opts[:db_limit] }
 SQL
 
 # Commit each row of the query to the repo.
