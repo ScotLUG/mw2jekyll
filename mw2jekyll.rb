@@ -36,30 +36,34 @@ script requires a few Ruby gems; you will be asked to install any that
 are not found on your system.
 END
 
-## Code:
 VERSION = '0.0.0.beta'
 
-require 'fileutils'
+# Require external gems or instruct on how to install them.
+def require_gems(*gems)
+  # Collect gems that raise `LoadError` into `missing`.
+  missing = gems.select do |gem|
+    begin
+      require gem
+    rescue LoadError
+      gem
+    else
+      false
+    end
+  end
 
-# Require our external gems or prompt the user to install them.
-missing = %w( rugged mysql2 trollop wikicloth ).select do |gem|
-  begin
-    require gem
-    false
-  rescue LoadError
-    gem
+  unless missing.empty?
+    abort <<-MSG
+#{ $PROGRAM_NAME } requires #{ missing.join ', ' }.
+Install #{ missing.one? ? 'it' : 'them' } with\
+ `gem install #{ missing.join ' ' }` and try again.
+    MSG
   end
 end
-unless missing.empty?
-  abort <<-MSG
-#{ $PROGRAM_NAME } requires #{ missing.join ', ' }.
-Install #{ missing.one? ? 'it' : 'them' } with `gem install #{ missing.join ' ' }`\
- and run this script again.
-  MSG
-end
+
+require 'fileutils'
+require_gems 'rugged', 'mysql2', 'trollop', 'wikicloth'
 
 # Parse command line options and create help message.
-
 opts = Trollop.options do
   banner USAGE
   banner '
