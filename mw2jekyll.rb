@@ -170,13 +170,6 @@ class String
 
   # Test for all-blank string.
   def blank?() strip.empty? end
-
-  # Change <a href="Some Link"></a> to <a href="some-link.html"></a>.
-  def fixlinks
-    gsub /(?<=href=")[^"]+(?=")/ do |uri|
-      uri =~ %r{\A(?:(https?:)?//)|#} ? uri : uri.catstrip.sluggify << '.html'
-    end
-  end
 end
 
 # Add a template to the first commit.
@@ -197,6 +190,16 @@ repo.index.add(path: 'index.html',
                oid:  repo.write('mainpage.html', :blob),
                mode: 0120000)
 
+# Patch WikiCloth handlers.
+module WikiCloth
+  class WikiLinkHandler
+    def url_for(page)
+      # <a href="#{url_for(page)}">...</a>
+      "#{page.catstrip.sluggify}.html"
+    end
+  end
+end
+
 print 'Populating repository'
 result.each do |row|
   title = row[:title].unsnake
@@ -215,7 +218,6 @@ result.each do |row|
     # Use String#force_encoding to make sure our text isn't something weird.
     html = WikiCloth::Parser.new(data: row[:content].force_encoding('utf-8'))
            .to_html
-           .fixlinks
            .squeeze("\n")
     blob = <<-EOS
 ---
