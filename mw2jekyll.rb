@@ -241,11 +241,10 @@ title: #{ title }
 
 
   # Try to construct a reasonable commit message.
-  message = if row[:message].blank?
-              row[:minor?] ? 'Minor edit' : "Modified #{path}"
-            else
-              row[:message]
-            end
+  message = row[:message]
+  if message.blank?
+    message = row[:minor?] ? 'Minor edit' : "Modified #{path}"
+  end
 
   author = {
     email: row[:author_email],
