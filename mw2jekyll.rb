@@ -71,6 +71,7 @@ Database options:'
   opt :db_user, 'MySQL user', default: 'root', short: 'u'
   opt :db_host, 'MySQL host', default: 'localhost', short: 'H'
   opt :db_password, 'Database password (default: ask)', type: :string, short: 'p'
+  opt :db_limit, 'Number of records (default: all)', type: :int, short: 'n'
   banner '
 Repository options:'
   opt :repo_force, 'Overwrite an existing repository', short: 'f'
@@ -151,6 +152,7 @@ query = <<SQL.strip.gsub(/\s+/, ' ')
     inner join `page`     on `page`.`page_id` = `revision`.`rev_page`
     inner join `user`     on `user`.`user_id` = `revision`.`rev_user`
   order by `unix_time`
+  #{ "limit #{opts[:db_limit]}" if opts[:db_limit] }
 SQL
 
 # Commit each row of the query to the repo.
