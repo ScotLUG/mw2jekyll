@@ -133,21 +133,19 @@ begin
                               database: opts[:db_name])
 rescue Mysql2::Error => e
   abort "Error: #{ e.message }"
+else
+  puts 'Connected to database.'
 end
-puts 'Connected to database.'
 
 # Check for existance of destination repo.
 if File.directory? opts[:repo_path]
-  # Abort if we're not using force and destination exists.
-  unless opts[:repo_force]
+  if opts[:repo_force]
+    warn "Warning: overwriting directory #{ opts[:repo_path].inspect }."
+    FileUtils.rm_rf opts[:repo_path]
+  else
     abort "Error: destination #{ opts[:repo_path].inspect } exists."
   end
-
-  FileUtils.rm_rf opts[:repo_path]
 end
-
-FileUtils.mkdir_p opts[:repo_path]
-puts "Created directory at #{ opts[:repo_path].inspect }."
 
 repo = Rugged::Repository.init_at opts[:repo_path], :bare
 puts "Initialized repository at #{ repo.path.inspect }."
