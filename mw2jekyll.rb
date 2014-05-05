@@ -125,18 +125,6 @@ if opts[:db_password].nil? && STDIN.tty?
   puts
 end
 
-# Connect to the database.
-begin
-  client = Mysql2::Client.new(host:     opts[:db_host],
-                              username: opts[:db_user],
-                              password: opts[:db_password],
-                              database: opts[:db_name])
-rescue Mysql2::Error => e
-  abort "Error: #{ e.message }"
-else
-  puts 'Connected to database.'
-end
-
 # Check for existance of destination repo.
 if File.directory? opts[:repo_path]
   if opts[:repo_force]
@@ -151,6 +139,20 @@ repo = Rugged::Repository.init_at opts[:repo_path], :bare
 puts "Initialized repository at #{ repo.path.inspect }."
 
 # Get the neccessany information from the database.
+db_opts = {
+  host:     opts[:db_host],
+  username: opts[:db_user],
+  password: opts[:db_password],
+  database: opts[:db_name]
+}
+begin
+  client = Mysql2::Client.new(db_opts)
+rescue Mysql2::Error => e
+  abort "Error: #{ e.message }"
+else
+  puts 'Connected to database.'
+end
+
 query = <<SQL
 select
   `user`.`user_email`         as `author_email`,
