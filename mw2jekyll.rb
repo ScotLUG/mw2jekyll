@@ -38,6 +38,8 @@ END
 
 VERSION = '0.0.0.beta'
 
+## Utilities:
+
 # Require external gems or instruct on how to install them.
 def require_gems(*gems)
   # Collect gems that raise `LoadError` into `missing`.
@@ -59,6 +61,23 @@ Install #{ missing.one? ? 'it' : 'them' } with\
     MSG
   end
 end
+
+# Convenience monkey patches.
+class String
+  # Change "A String/Title, like this!" to "a-string-title-like-this".
+  def sluggify() downcase.tr_s('^a-z0-9', '-').chomp('-') end
+
+  # Change "A_title__like_this" to "A title like this".
+  def unsnake() tr_s('_', ' ').strip end
+
+  # Change "Category:page" to "page"
+  def catstrip() rpartition(':').pop end
+
+  # Test for all-blank string.
+  def blank?() strip.empty? end
+end
+
+## Code:
 
 require 'fileutils'
 require_gems 'rugged', 'mysql2', 'trollop', 'wikicloth'
@@ -158,21 +177,6 @@ SQL
 # Commit each row of the query to the repo.
 result = client.query query, symbolize_keys: true, cast_booleans: true
 abort 'Error: no results returned!' unless result.any?
-
-# Convenience monkey patches.
-class String
-  # Change "A String/Title, like this!" to "a-string-title-like-this".
-  def sluggify() downcase.tr_s('^a-z0-9', '-').chomp('-') end
-
-  # Change "A_title__like_this" to "A title like this".
-  def unsnake() tr_s('_', ' ').strip end
-
-  # Change "Category:page" to "page"
-  def catstrip() rpartition(':').pop end
-
-  # Test for all-blank string.
-  def blank?() strip.empty? end
-end
 
 # Add a template to the first commit.
 blob = <<EOS
