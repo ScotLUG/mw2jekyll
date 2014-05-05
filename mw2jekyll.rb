@@ -96,10 +96,11 @@ if opts[:db_password].nil? && STDIN.tty?
 
   print "Password for MySQL user '#{ opts[:db_user] }'@'#{ opts[:db_host] }': "
   begin
-    opts[:db_password] = STDIN.noecho(&:gets).chomp
-  rescue NoMethodError
-    # User killed the operation, bail out.
-    abort 'Aborted.'
+    input = STDIN.noecho &:gets
+  rescue Interrupt
+    abort
+  else
+    opts[:db_password] = input.chomp
   end
   puts
 end
