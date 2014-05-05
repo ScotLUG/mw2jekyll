@@ -205,6 +205,9 @@ result.each do |row|
   title = row[:title].unsnake
   path  = row[:title].sluggify << '.html'
 
+  # Override whatever encoding the database thinks our content is in.
+  markup = row[:content].force_encoding 'utf-8'
+
   if row[:content].blank?
     # Delete an empty page.
     begin
@@ -215,8 +218,7 @@ result.each do |row|
       next
     end
   else
-    # Use String#force_encoding to make sure our text isn't something weird.
-    html = WikiCloth::Parser.new(data: row[:content].force_encoding('utf-8'))
+    html = WikiCloth::Parser.new(data: markup)
            .to_html
            .squeeze("\n")
     blob = <<-EOS
