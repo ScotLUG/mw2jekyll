@@ -23,7 +23,7 @@ END
 USAGE = <<END
 A MediaWiki MySQL database to Jekyll Git repository conversion tool.
 
-Usage: #{ $PROGRAM_NAME } [option]… <database> <repository>
+Usage: #{$PROGRAM_NAME} [option]… <database> <repository>
 END
 
 COMMENTARY = <<END
@@ -55,9 +55,9 @@ def require_gems(*gems)
 
   unless missing.empty?
     abort <<-MSG
-#{ $PROGRAM_NAME } requires #{ missing.join ', ' }.
-Install #{ missing.one? ? 'it' : 'them' } with\
- `gem install #{ missing.join ' ' }` and try again.
+#{$PROGRAM_NAME} requires #{missing.join ', '}.
+Install #{missing.one? ? 'it' : 'them'} with\
+ `gem install #{missing.join ' '}` and try again.
     MSG
   end
 end
@@ -114,7 +114,7 @@ Trollop.die "too many arguments specified" unless ARGV.empty?
 if opts[:db_password].nil? && STDIN.tty?
   require 'io/console'
 
-  print "Password for MySQL user '#{ opts[:db_user] }'@'#{ opts[:db_host] }': "
+  print "Password for MySQL user '#{opts[:db_user]}'@'#{opts[:db_host]}': "
   begin
     input = STDIN.noecho &:gets
   rescue Interrupt
@@ -135,7 +135,7 @@ db_opts = {
 begin
   client = Mysql2::Client.new(db_opts)
 rescue Mysql2::Error => e
-  abort "Error: #{ e.message }"
+  abort "Error: #{e.message}"
 else
   puts 'Connected to database.'
 end
@@ -158,29 +158,29 @@ from `text`
   inner join `page`     on `page`.`page_id` = `revision`.`rev_page`
   inner join `user`     on `user`.`user_id` = `revision`.`rev_user`
 order by `unix_time`
-#{ "limit #{opts[:db_limit]}" if opts[:db_limit] }
+#{"limit #{opts[:db_limit]}" if opts[:db_limit]}
 SQL
 
 result = client.query query, symbolize_keys: true, cast_booleans: true
 client.close
 
 unless result.any?
-  abort "Error: nothing in #{ db_opts[:database].inspect } matched query:
+  abort "Error: nothing in #{db_opts[:database].inspect} matched query:
 #{query}"
 end
 
 # Check for existance of destination repo.
 if File.directory? opts[:repo_path]
   if opts[:repo_force]
-    warn "Warning: overwriting directory #{ opts[:repo_path].inspect }."
+    warn "Warning: overwriting directory #{opts[:repo_path].inspect}."
     FileUtils.rm_rf opts[:repo_path]
   else
-    abort "Error: destination #{ opts[:repo_path].inspect } exists."
+    abort "Error: destination #{opts[:repo_path].inspect} exists."
   end
 end
 
 repo = Rugged::Repository.init_at opts[:repo_path], :bare
-puts "Initialized repository at #{ repo.path.inspect }."
+puts "Initialized repository at #{repo.path.inspect}."
 
 # Add a template to the first commit.
 blob = <<EOS
@@ -204,7 +204,7 @@ repo.index.add(path: 'index.html',
 module WikiCloth
   class WikiLinkHandler
     def url_for(page)
-      # <a href="#{url_for(page)}">...</a>
+      # Used in <a href="#{url_for(page)}">...</a>
       "#{page.catstrip.sluggify}.html"
     end
   end
@@ -218,20 +218,18 @@ result.each do |row|
   # Override whatever encoding the database thinks our content is in.
   markup = row[:content].force_encoding 'utf-8'
 
-  html = WikiCloth::Parser.new(data: markup)
-         .to_html
-         .squeeze("\n")
+  html = WikiCloth::Parser.new(data: markup).to_html.squeeze("\n")
   blob = <<-EOS
 ---
 layout: default
-title: #{ title }
+title: #{title}
 ---
 
-#{ html }
+#{html}
 
 <!-- MediaWiki markup -->
 <!--
-#{ row[:content] }
+#{row[:content]}
 -->
     EOS
   repo.index.add(path: path,
