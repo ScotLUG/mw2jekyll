@@ -218,20 +218,10 @@ result.each do |row|
   # Override whatever encoding the database thinks our content is in.
   markup = row[:content].force_encoding 'utf-8'
 
-  if row[:content].blank?
-    # Delete an empty page.
-    begin
-      repo.index.remove path
-    rescue Rugged::IndexError
-      # That page wasn't in the index, oh well.  Carry on!
-      print '?'
-      next
-    end
-  else
-    html = WikiCloth::Parser.new(data: markup)
-           .to_html
-           .squeeze("\n")
-    blob = <<-EOS
+  html = WikiCloth::Parser.new(data: markup)
+         .to_html
+         .squeeze("\n")
+  blob = <<-EOS
 ---
 layout: default
 title: #{ title }
@@ -244,11 +234,9 @@ title: #{ title }
 #{ row[:content] }
 -->
     EOS
-    repo.index.add(path: path,
-                   oid:  repo.write(blob, :blob),
-                   mode: 0100644)
-  end
-
+  repo.index.add(path: path,
+                 oid:  repo.write(blob, :blob),
+                 mode: 0100644)
 
   # Try to construct a reasonable commit message.
   message = row[:message]
