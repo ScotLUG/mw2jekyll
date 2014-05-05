@@ -269,6 +269,7 @@ title: #{ title }
   print '.'
 end
 
-# And we're done!
 puts 'done!'
 client.close
+
+## mw2jekyll.rb ends here
