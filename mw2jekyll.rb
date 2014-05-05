@@ -158,11 +158,6 @@ result = client.query query, symbolize_keys: true, cast_booleans: true
 abort 'Error: no results returned!' unless result.any?
 
 # Convenience monkey patches.
-class Object
-  # Test for nil or empty.
-  def blank?() nil? || empty? end
-end
-
 class String
   # Change "A String/Title, like this!" to "a-string-title-like-this".
   def sluggify() downcase.tr_s('^a-z0-9', '-').chomp('-') end
