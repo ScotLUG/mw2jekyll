@@ -20,7 +20,11 @@ You should have received a copy of the GNU General Public License
 along with this script.  If not, see <http://www.gnu.org/licenses/>.
 END
 
+USAGE = <<END
+A MediaWiki MySQL database to Jekyll Git repository conversion tool.
 
+Usage: #{ $PROGRAM_NAME } [option]… <database> <repository>
+END
 
 COMMENTARY = <<END
 This script will extract the textual revision history in MediaWiki
@@ -55,12 +59,11 @@ Install #{ missing.one? ? 'it' : 'them' } with `gem install #{ missing.join ' ' 
 end
 
 # Parse command line options and create help message.
+
 opts = Trollop.options do
-  banner "A MediaWiki MySQL database to Jekyll Git repository conversion tool.
-
-Usage: #{ $PROGRAM_NAME } [option]… <database> <repository>
-
-Database options:"
+  banner USAGE
+  banner '
+Database options:'
   opt :db_user, 'MySQL user', default: 'root', short: 'u'
   opt :db_host, 'MySQL host', default: 'localhost', short: 'H'
   opt :db_password, 'Database password (default: ask)', type: :string, short: 'p'
