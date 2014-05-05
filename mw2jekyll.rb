@@ -215,6 +215,19 @@ result.each do |row|
   title = row[:title].unsnake
   path  = row[:title].sluggify << '.html'
 
+  # Construct a reasonable commit message.
+  message = row[:message]
+  if message.blank?
+    message =
+      if repo.index.get(path).nil?
+        "Created #{title.inspect}"
+      elsif row[:minor?]
+        'Minor edit'
+      else
+        "Modified #{title.inspect}"
+      end
+  end
+
   # Override whatever encoding the database thinks our content is in.
   markup = row[:content].force_encoding 'utf-8'
 
@@ -235,12 +248,6 @@ title: #{title}
   repo.index.add(path: path,
                  oid:  repo.write(blob, :blob),
                  mode: 0100644)
-
-  # Try to construct a reasonable commit message.
-  message = row[:message]
-  if message.blank?
-    message = row[:minor?] ? 'Minor edit' : "Modified #{path}"
-  end
 
   author = {
     email: row[:author_email],
