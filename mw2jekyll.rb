@@ -175,6 +175,8 @@ order by `unix_time`
 SQL
 
 result = client.query query, symbolize_keys: true, cast_booleans: true
+client.close
+
 unless result.any?
   abort "Error: nothing in #{ db_opts[:database].inspect } matched query:
 #{query}"
@@ -276,6 +278,5 @@ title: #{ title }
 end
 
 puts 'done!'
-client.close
 
 ## mw2jekyll.rb ends here
