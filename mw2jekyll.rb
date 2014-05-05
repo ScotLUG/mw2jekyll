@@ -125,19 +125,6 @@ if opts[:db_password].nil? && STDIN.tty?
   puts
 end
 
-# Check for existance of destination repo.
-if File.directory? opts[:repo_path]
-  if opts[:repo_force]
-    warn "Warning: overwriting directory #{ opts[:repo_path].inspect }."
-    FileUtils.rm_rf opts[:repo_path]
-  else
-    abort "Error: destination #{ opts[:repo_path].inspect } exists."
-  end
-end
-
-repo = Rugged::Repository.init_at opts[:repo_path], :bare
-puts "Initialized repository at #{ repo.path.inspect }."
-
 # Get the neccessany information from the database.
 db_opts = {
   host:     opts[:db_host],
@@ -181,6 +168,19 @@ unless result.any?
   abort "Error: nothing in #{ db_opts[:database].inspect } matched query:
 #{query}"
 end
+
+# Check for existance of destination repo.
+if File.directory? opts[:repo_path]
+  if opts[:repo_force]
+    warn "Warning: overwriting directory #{ opts[:repo_path].inspect }."
+    FileUtils.rm_rf opts[:repo_path]
+  else
+    abort "Error: destination #{ opts[:repo_path].inspect } exists."
+  end
+end
+
+repo = Rugged::Repository.init_at opts[:repo_path], :bare
+puts "Initialized repository at #{ repo.path.inspect }."
 
 # Add a template to the first commit.
 blob = <<EOS
