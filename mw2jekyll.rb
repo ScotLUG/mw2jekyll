@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # coding: utf-8
 
-## mw2jekyll.rb --- MediaWiki database -> Jekyll Git repository
+## mw2jekyll.rb --- MediaWiki MySQL database to Jekyll Git repository
 
 COPYRIGHT = <<END
 Copyright (C) 2014 David Jones <david at djones.eu>
