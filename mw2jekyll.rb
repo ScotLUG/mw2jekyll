@@ -174,9 +174,11 @@ order by `unix_time`
 #{ "limit #{opts[:db_limit]}" if opts[:db_limit] }
 SQL
 
-# Commit each row of the query to the repo.
 result = client.query query, symbolize_keys: true, cast_booleans: true
-abort 'Error: no results returned!' unless result.any?
+unless result.any?
+  abort "Error: nothing in #{ db_opts[:database].inspect } matched query:
+#{query}"
+end
 
 # Add a template to the first commit.
 blob = <<EOS
