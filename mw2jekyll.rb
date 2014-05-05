@@ -6,7 +6,6 @@
 # Author::    David Jones (mailto: david@djones.eu)
 # Copyright:: Copyright (C) 2014 David Jones
 # License::   GNU GPLv3+
-# Version::   0.0.0.beta
 
 # This script is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -20,6 +19,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this script.  If not, see <http://www.gnu.org/licenses/>.
+VERSION = '0.0.0.beta'
 
 ## Commentary:
 
@@ -49,16 +49,6 @@ Install #{ missing.one? ? 'it' : 'them' } with `gem install #{ missing.join ' ' 
   MSG
 end
 
-# Utility to get the version number from the first N lines of this file.
-def get_version(n = 12, regexp = /version:\W+([\w.-]+)/i)
-  open __FILE__ do |f|
-    f.each_line do |line|
-      regexp.match(line) { |m| return m[1] }
-      return unless f.lineno < n
-    end
-  end
-end
-
 # Parse command line options and create help message.
 opts = Trollop.options do
   banner "A MediaWiki MySQL database to Jekyll Git repository conversion tool.
@@ -74,7 +64,7 @@ Repository options:'
   opt :repo_force, 'Overwrite an existing repository', short: 'f'
   banner'
 General options:'
-  version get_version || '[development]'
+  version VERSION
 end
 
 # Get the database name from ARGV.
