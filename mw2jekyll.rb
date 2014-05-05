@@ -183,16 +183,16 @@ repo = Rugged::Repository.init_at opts[:repo_path], :bare
 puts "Initialized repository at #{repo.path.inspect}."
 
 # Add a template to the first commit.
-blob = <<EOS
+template = <<HTML
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>{{ page.title }}</title>
 <body>
 {{ content }}
 </body>
-EOS
+HTML
 repo.index.add(path: '_layouts/default.html',
-               oid:  repo.write(blob, :blob),
+               oid:  repo.write(template, :blob),
                mode: 0100644)
 
 # Add a symlink from site root to the main page (added next.)
@@ -230,23 +230,22 @@ result.each do |row|
 
   # Override whatever encoding the database thinks our content is in.
   markup = row[:content].force_encoding 'utf-8'
-
   html = WikiCloth::Parser.new(data: markup).to_html.squeeze("\n")
-  blob = <<-EOS
+
+  document = <<-YAML << html << <<-SOURCE
 ---
 layout: default
 title: #{title}
 ---
-
-#{html}
+  YAML
 
 <!-- MediaWiki markup -->
 <!--
-#{row[:content]}
+#{markup}
 -->
-    EOS
+  SOURCE
   repo.index.add(path: path,
-                 oid:  repo.write(blob, :blob),
+                 oid:  repo.write(document, :blob),
                  mode: 0100644)
 
   author = {
