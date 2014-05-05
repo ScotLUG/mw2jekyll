@@ -33,6 +33,7 @@ are not found on your system.
 END
 
 ## Code:
+VERSION = '0.0.0.beta'
 
 require 'fileutils'
 
