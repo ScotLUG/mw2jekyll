@@ -256,7 +256,7 @@ title: #{ title }
   options = {
     tree:       repo.index.write_tree(repo),
     author:     author,
-    message:    row[:message],
+    message:    message,
     committer:  author,
     parents:    repo.empty? ? [] : [repo.head.target].compact,
     update_ref: 'HEAD'
