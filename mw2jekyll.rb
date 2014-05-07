@@ -210,6 +210,13 @@ module WikiCloth
   end
 end
 
+# Add WikiCloth::Parser#to_html to String.
+class String
+  def to_html
+    WikiCloth::Parser.new(data: self).to_html
+  end
+end
+
 print 'Populating repository'
 result.each do |row|
   title = row[:title].unsnake
@@ -230,9 +237,8 @@ result.each do |row|
 
   # Override whatever encoding the database thinks our content is in.
   markup = row[:content].force_encoding 'utf-8'
-  html = WikiCloth::Parser.new(data: markup).to_html.squeeze("\n")
 
-  document = <<-YAML << html << <<-SOURCE
+  document = <<-YAML << markup.to_html.squeze("\n") << <<-SOURCE
 ---
 layout: default
 title: #{title}
