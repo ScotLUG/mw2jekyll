@@ -61,19 +61,29 @@ end
 # Convenience monkey patches.
 class String
   # Change "A String/Title, like this!" to "a-string-title-like-this".
-  def sluggify() downcase.tr_s('^a-z0-9', '-').chomp('-') end
+  def sluggify
+    downcase.tr_s('^a-z0-9', '-').chomp('-')
+  end
 
   # Change "A_title__like_this" to "A title like this".
-  def unsnake() tr_s('_', ' ').strip end
+  def unsnake
+    tr_s('_', ' ').strip
+  end
 
   # Change "Category:page" to "page"
-  def catstrip() rpartition(':').pop end
+  def catstrip
+    rpartition(':').pop
+  end
 
   # Break up two or more consecutive '-'s with a space.
-  def html_comment_safe() gsub(/(?<=-)(?=-)/, ' ') end
+  def html_comment_safe
+    gsub(/(?<=-)(?=-)/, ' ')
+  end
 
   # Test for all-blank string.
-  def blank?() strip.empty? end
+  def blank?
+    strip.empty?
+  end
 end
 
 ## Code:
@@ -93,7 +103,7 @@ Database options:'
   banner '
 Repository options:'
   opt :repo_force, 'Overwrite an existing repository', short: 'f'
-  banner'
+  banner '
 General options:'
   version VERSION
 end
@@ -107,7 +117,7 @@ Trollop.die 'target repository required' if ARGV.empty?
 opts[:repo_path] = File.expand_path ARGV.shift
 
 # Check there wasn't anything else on ARGV.
-Trollop.die "too many arguments specified" unless ARGV.empty?
+Trollop.die 'too many arguments specified' unless ARGV.empty?
 
 # Read in the database password if omitted (and we're on a tty.)
 if opts[:db_password].nil? && STDIN.tty?
@@ -115,7 +125,7 @@ if opts[:db_password].nil? && STDIN.tty?
 
   print "Password for MySQL user '#{opts[:db_user]}'@'#{opts[:db_host]}': "
   begin
-    input = STDIN.noecho &:gets
+    input = STDIN.noecho(&:gets)
   rescue Interrupt
     abort
   else
