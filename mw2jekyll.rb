@@ -73,6 +73,9 @@ class String
   # Change "Category:page" to "page"
   def catstrip() rpartition(':').pop end
 
+  # Break up two or more consecutive '-'s with a space.
+  def html_comment_safe() gsub(/(?<=-)(?=-)/, ' ') end
+
   # Test for all-blank string.
   def blank?() strip.empty? end
 end
@@ -249,7 +252,7 @@ title: #{title}
 
 <!-- MediaWiki source -->
 <!--
-#{markup}
+#{markup.html_comment_safe}
 -->
   PAGE
 
