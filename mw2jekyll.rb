@@ -40,26 +40,22 @@ VERSION = '0.0.0.beta'
 
 ## Utilities:
 
-# Require external gems or instruct on how to install them.
-def require_gems(*gems)
-  # Collect gems that raise `LoadError` into `missing`.
-  missing = gems.select do |gem|
-    begin
-      require gem
-    rescue LoadError
-      gem
-    else
-      false
-    end
-  end
+# Require a gem, returning false on success or its name on failure.
+def require_or_return(gem)
+  require gem
+rescue LoadError
+  gem
+else
+  false
+end
 
-  unless missing.empty?
-    abort <<-MSG
-#{$PROGRAM_NAME} requires #{missing.join ', '}.
-Install #{missing.one? ? 'it' : 'them'} with\
- `gem install #{missing.join ' '}` and try again.
-    MSG
-  end
+# Require external gems or instruct on how to install them.
+def require_gems(gems)
+  missing = gems.select { |gem| require_or_return gem }
+
+  abort "#{$PROGRAM_NAME} requires #{missing.join ', '}.
+Install #{missing.one? ? 'it' : 'them'} with `gem install #{missing.join ' '}`\
+ and try again." if missing.any?
 end
 
 # Convenience monkey patches.
@@ -83,7 +79,7 @@ end
 ## Code:
 
 require 'fileutils'
-require_gems 'rugged', 'mysql2', 'trollop', 'wikicloth'
+require_gems %w(rugged mysql2 trollop wikicloth)
 
 # Parse command line options and create help message.
 opts = Trollop.options do
