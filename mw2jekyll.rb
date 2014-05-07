@@ -183,7 +183,9 @@ repo = Rugged::Repository.init_at opts[:repo_path], :bare
 puts "Initialized repository at #{repo.path.inspect}."
 
 # Add a template to the first commit.
-template = <<HTML
+repo.index.add path: '_layouts/default.html',
+               mode: 0100644,
+               oid: repo.write(<<HTML, :blob)
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>{{ page.title }}</title>
@@ -191,14 +193,11 @@ template = <<HTML
 {{ content }}
 </body>
 HTML
-repo.index.add(path: '_layouts/default.html',
-               oid:  repo.write(template, :blob),
-               mode: 0100644)
 
 # Add a symlink from site root to the main page (added next.)
-repo.index.add(path: 'index.html',
-               oid:  repo.write('mainpage.html', :blob),
-               mode: 0120000)
+repo.index.add path: 'index.html',
+               mode: 0120000,
+               oid: repo.write('mainpage.html', :blob)
 
 # Patch WikiCloth handlers.
 module WikiCloth
@@ -238,21 +237,21 @@ result.each do |row|
   # Override whatever encoding the database thinks our content is in.
   markup = row[:content].force_encoding 'utf-8'
 
-  document = <<-YAML << markup.to_html.squeze("\n") << <<-SOURCE
+  repo.index.add path: path,
+                 mode: 0100644,
+                 oid: repo.write(<<-PAGE, :blob)
 ---
 layout: default
 title: #{title}
 ---
-  YAML
+
+#{ markup.to_html.squeeze "\n" }
 
 <!-- MediaWiki source -->
 <!--
 #{markup}
 -->
-  SOURCE
-  repo.index.add(path: path,
-                 oid:  repo.write(document, :blob),
-                 mode: 0100644)
+  PAGE
 
   author = {
     email: row[:author_email],
