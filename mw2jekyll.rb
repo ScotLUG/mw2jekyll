@@ -254,7 +254,7 @@ layout: default
 title: #{title}
 ---
 
-#{ markup.to_html.squeeze "\n" }
+#{markup.to_html.squeeze}
 
 <!-- MediaWiki source -->
 <!--
