@@ -139,28 +139,27 @@ db_opts = {
   host:     opts[:db_host],
   username: opts[:db_user],
   password: opts[:db_password],
-  database: opts[:db_name]
+  database: opts[:db_name],
+  cast_booleans:  true,
+  symbolize_keys: true
 }
 begin
   client = Mysql2::Client.new(db_opts)
 rescue Mysql2::Error => e
   abort "Error: #{e.message}"
 else
-  puts 'Connected to database.'
+  puts "Connected to #{client.query_options[:database].inspect}."
 end
 
-query = <<SQL
+history = client.query <<SQL
 select
   `user`.`user_email`         as `author_email`,
   `user`.`user_real_name`     as `author_name`,
-
   unix_timestamp(`revision`.`rev_timestamp`)
                               as `unix_time`,
-
   `page`.`page_title`         as `title`,
   `text`.`old_text`           as `content`,
   `revision`.`rev_comment`    as `message`,
-
   `revision`.`rev_minor_edit` as `minor?`
 from `text`
   inner join `revision` on `revision`.`rev_text_id` = `text`.`old_id`
@@ -169,14 +168,9 @@ from `text`
 order by `unix_time`
 #{"limit #{opts[:db_limit]}" if opts[:db_limit]}
 SQL
-
-result = client.query query, symbolize_keys: true, cast_booleans: true
 client.close
 
-unless result.any?
-  abort "Error: nothing in #{db_opts[:database].inspect} matched query:
-#{query}"
-end
+abort 'Error: no revision history found in the database.' unless history.any?
 
 # Check for existance of destination repo.
 if File.directory? opts[:repo_path]
@@ -226,17 +220,17 @@ class String
 end
 
 print 'Populating repository'
-result.each do |row|
-  title = row[:title].unsnake
-  path  = row[:title].sluggify << '.html'
+history.each do |revision|
+  title = revision[:title].unsnake
+  path  = revision[:title].sluggify << '.html'
 
   # Construct a reasonable commit message.
-  message = row[:message]
+  message = revision[:message]
   if message.blank?
     message =
       if repo.index.get(path).nil?
         "Created #{title.inspect}"
-      elsif row[:minor?]
+      elsif revision[:minor?]
         'Minor edit'
       else
         "Modified #{title.inspect}"
@@ -244,7 +238,7 @@ result.each do |row|
   end
 
   # Override whatever encoding the database thinks our content is in.
-  markup = row[:content].force_encoding 'utf-8'
+  markup = revision[:content].force_encoding 'utf-8'
 
   repo.index.add path: path,
                  mode: 0100644,
@@ -263,9 +257,9 @@ title: #{title}
   PAGE
 
   author = {
-    email: row[:author_email],
-    name:  row[:author_name],
-    time:  Time.at(row[:unix_time])
+    email: revision[:author_email],
+    name:  revision[:author_name],
+    time:  Time.at(revision[:unix_time])
   }
 
   options = {
