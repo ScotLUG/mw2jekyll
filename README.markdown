@@ -30,7 +30,7 @@ Once you have a bare repository, you can clone from it and run Jekyll in the pro
     $ git clone /path/to/repo.git jekyll-project
     $ (cd jekyll-project && jekyll serve)
 
-Jekyll will serve to http://localhost:4000 (try http://localhost:4000/welcome.html for the welcome page.)
+Jekyll will serve to [localhost:4000](http://localhost:4000) (try [localhost:400/welcome.html](http://localhost:4000/welcome.html) for the welcome page.)
 
 ## Usage notes
 
