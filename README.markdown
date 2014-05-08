@@ -24,7 +24,13 @@ You can pass a few database options explicitly:
 
     $ mw2jekyll -u mysqluser -H some_host -p "some password" mwdb /path/to/repo.git
 
-Once you have a bare repository, you can clone from it and run Jekyll in the project root.
+Once you have a bare repository, you can clone from it and run Jekyll in the project root:
+
+    $ gem install jekyll  # if you don't have it already
+    $ git clone /path/to/repo.git jekyll-project
+    $ (cd jekyll-project && jekyll serve)
+
+Jekyll will serve to http://localhost:4000 (try http://localhost:4000/welcome.html for the welcome page.)
 
 ## Usage notes
 
